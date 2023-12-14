@@ -22,7 +22,17 @@ class AdminLoginController extends Controller
         ]);
         if ($validator->passes()) {
             if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
-                return redirect()->route('admin.dashboard');
+                
+                $admin = Auth::guard('admin')->user();
+
+                if($admin->role==2){
+
+                    return redirect()->route('admin.dashboard');
+                }else{
+                    Auth::guard('admin')->logout();
+                    return redirect()->route('admin.login')->with('error', 'Your are not allowed to access this page.');
+                }
+
             }else{
                 return redirect()->route('admin.login')->with('error', 'Either Email or Password is incorrect');
             }
@@ -30,4 +40,5 @@ class AdminLoginController extends Controller
             return redirect()->route('admin.login')->withErrors($validator)->withInput($request->only('email'));
         }
     }
+    
 }
